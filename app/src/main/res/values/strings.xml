@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Aquameter</string>
+    <string name="logo_description">Aquameter Logo</string>
+    <string name="username_hint">Usuario</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="login_button">Iniciar Sesión</string>
+    <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
+    <string name="error_empty_fields">Por favor, completa todos los campos</string>
+    <string name="greeting_message">¡Bienvenido a Aquameter!</string>
+</resources>
