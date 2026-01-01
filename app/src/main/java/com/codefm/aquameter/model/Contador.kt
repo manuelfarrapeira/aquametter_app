@@ -71,7 +71,7 @@ data class Contador(
     /**
      * Calcula los días entre la penúltima y última lectura
      */
-    private fun getDiasPenultima(): Int {
+    fun getDiasPenultima(): Int {
         return try {
             val ultimaDate = parseDateFromString(fechaLectura)
             val penultimaDate = parseDateFromString(penultimaFechaLectura)
@@ -227,6 +227,26 @@ data class Contador(
     fun getConsumo(nuevaLectura: Double): String {
         val ultimaLect = ultimaLectura.toDoubleOrNull() ?: 0.0
         var diff = round(nuevaLectura - ultimaLect, 3)
+
+        if (unidad == "m3l") {
+            diff *= 1000
+        }
+
+        return if (unidad == "m3") {
+            "$diff ${getFormatedUnidad()}"
+        } else {
+            "${diff.toLong()} ${getFormatedUnidad()}"
+        }
+    }
+
+    /**
+     * Calcula el consumo de la última lectura (diferencia entre última y penúltima)
+     * @return String con el consumo formateado
+     */
+    fun getLastConsumo(): String {
+        val ultimaLect = ultimaLectura.toDoubleOrNull() ?: 0.0
+        val penultimaLect = penultimaLectura.toDoubleOrNull() ?: 0.0
+        var diff = round(ultimaLect - penultimaLect, 3)
 
         if (unidad == "m3l") {
             diff *= 1000

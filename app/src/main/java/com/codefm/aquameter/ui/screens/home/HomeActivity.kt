@@ -266,10 +266,23 @@ class HomeActivity : AppCompatActivity() {
     private fun openMedicionActivity(contador: com.codefm.aquameter.model.Contador) {
         // Verificar si ya hay una lectura de hoy
         if (contador.isToday()) {
-            // Mostrar mensaje informativo
+            // Calcular información de la lectura (entre última y penúltima)
+            val lectura = contador.ultimaLectura
+            val unidad = contador.getFormatedUnidad()
+            val consumo = contador.getLastConsumo() // Consumo entre última y penúltima lectura
+            val dias = contador.getDiasPenultima() // Días entre penúltima y última lectura
+
+            // Construir mensaje detallado
+            val mensaje = buildString {
+                append("Lectura: $lectura $unidad\n\n")
+                append("Consumo: $consumo\n\n")
+                append("Días: $dias")
+            }
+
+            // Mostrar diálogo con información
             AlertDialog.Builder(this)
                 .setTitle(R.string.lectura_ya_registrada)
-                .setMessage(R.string.mensaje_lectura_ya_registrada)
+                .setMessage(mensaje)
                 .setPositiveButton(R.string.entendido, null)
                 .show()
             return
