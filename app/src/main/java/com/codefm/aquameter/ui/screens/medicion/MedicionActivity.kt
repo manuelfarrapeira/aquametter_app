@@ -1,24 +1,14 @@
 package com.codefm.aquameter.ui.screens.medicion
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import com.codefm.aquameter.R
 import com.codefm.aquameter.databinding.DialogMedicionBinding
 import com.codefm.aquameter.model.Contador
@@ -26,8 +16,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 /**
  * Activity para registrar mediciones con foto
@@ -42,18 +30,20 @@ class MedicionActivity : AppCompatActivity() {
     private var capturedBitmap: Bitmap? = null
     private var photoBase64: String? = null
 
-    private var imageCapture: ImageCapture? = null
-    private lateinit var cameraExecutor: ExecutorService
-    private var cameraDialog: AlertDialog? = null
-
-    // Launcher para permisos de cámara
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            showCameraDialog()
-        } else {
-            showMessage("Permiso de cámara denegado")
+    // Launcher para la cámara nativa
+    private val takePictureLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            @Suppress("DEPRECATION")
+            val imageBitmap = result.data?.extras?.get("data") as? Bitmap
+            imageBitmap?.let { bitmap ->
+                // Guardar la imagen capturada
+                capturedBitmap = bitmap
+                photoBase64 = viewModel.compressAndEncodeImage(bitmap)
+                binding.btnVerFoto.isEnabled = true
+                showMessage("Foto capturada correctamente")
+            }
         }
     }
 
@@ -62,7 +52,6 @@ class MedicionActivity : AppCompatActivity() {
         binding = DialogMedicionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
 
         // Obtener contador desde Intent
         val contadorJson = intent.getStringExtra("contador")
@@ -89,7 +78,7 @@ class MedicionActivity : AppCompatActivity() {
 
         // Botón tomar foto
         binding.btnTomarFoto.setOnClickListener {
-            requestCameraPermission()
+            openNativeCamera()
         }
 
         // Botón ver foto
@@ -135,107 +124,13 @@ class MedicionActivity : AppCompatActivity() {
         }
     }
 
-    private fun requestCameraPermission() {
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                showCameraDialog()
-            }
-            else -> {
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
+    private fun openNativeCamera() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (takePictureIntent.resolveActivity(packageManager) != null) {
+            takePictureLauncher.launch(takePictureIntent)
+        } else {
+            showMessage("No se encontró una aplicación de cámara")
         }
-    }
-
-    private fun showCameraDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_camera, null)
-        val previewView = dialogView.findViewById<PreviewView>(R.id.previewView)
-        val btnCapture = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCapture)
-        val btnCloseCamera = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCloseCamera)
-
-        cameraDialog = MaterialAlertDialogBuilder(this)
-            .setView(dialogView)
-            .setCancelable(false)
-            .create()
-
-        startCamera(previewView)
-
-        btnCapture.setOnClickListener {
-            takePicture()
-        }
-
-        btnCloseCamera.setOnClickListener {
-            cameraDialog?.dismiss()
-        }
-
-        cameraDialog?.show()
-    }
-
-    private fun startCamera(previewView: PreviewView) {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
-                }
-
-            imageCapture = ImageCapture.Builder()
-                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                .build()
-
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this,
-                    cameraSelector,
-                    preview,
-                    imageCapture
-                )
-            } catch (e: Exception) {
-                e.printStackTrace()
-                showMessage("Error al iniciar la cámara")
-            }
-        }, ContextCompat.getMainExecutor(this))
-    }
-
-    private fun takePicture() {
-        val imageCapture = imageCapture ?: return
-
-        imageCapture.takePicture(
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageCapturedCallback() {
-                override fun onCaptureSuccess(imageProxy: androidx.camera.core.ImageProxy) {
-                    val buffer = imageProxy.planes[0].buffer
-                    val bytes = ByteArray(buffer.remaining())
-                    buffer.get(bytes)
-
-                    capturedBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
-                    // Comprimir y codificar
-                    capturedBitmap?.let { bitmap ->
-                        photoBase64 = viewModel.compressAndEncodeImage(bitmap)
-                        binding.btnVerFoto.isEnabled = true
-                        showMessage("Foto capturada")
-                    }
-
-                    imageProxy.close()
-                    cameraDialog?.dismiss()
-                }
-
-                override fun onError(exception: ImageCaptureException) {
-                    exception.printStackTrace()
-                    showMessage("Error al capturar foto")
-                }
-            }
-        )
     }
 
     private fun showPhotoDialog() {
@@ -332,11 +227,6 @@ class MedicionActivity : AppCompatActivity() {
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
     }
 }
 
