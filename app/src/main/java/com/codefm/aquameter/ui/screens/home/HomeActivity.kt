@@ -1,5 +1,6 @@
 package com.codefm.aquameter.ui.screens.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -10,6 +11,7 @@ import com.codefm.aquameter.R
 import com.codefm.aquameter.databinding.ActivityHomeBinding
 import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.ui.adapters.ContadorAdapter
+import com.codefm.aquameter.ui.screens.login.LoginActivity
 
 /**
  * Activity de Home que muestra la lista de contadores
@@ -18,6 +20,7 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private val viewModel: HomeViewModel by viewModels()
+    private var isFabMenuOpen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +33,7 @@ class HomeActivity : AppCompatActivity() {
 
         setupSearchFunctionality()
         setupSwipeRefresh()
+        setupFabMenu()
         observeViewModel()
         viewModel.loadContadores()
     }
@@ -73,6 +77,106 @@ class HomeActivity : AppCompatActivity() {
             android.R.color.holo_blue_dark,
             android.R.color.holo_green_dark
         )
+    }
+
+    private fun setupFabMenu() {
+        // Click en el FAB principal para abrir/cerrar el menú
+        binding.fabMenu.setOnClickListener {
+            if (isFabMenuOpen) {
+                closeFabMenu()
+            } else {
+                openFabMenu()
+            }
+        }
+
+        // Botón ordenar por nombre
+        binding.fabSortByName.setOnClickListener {
+            viewModel.sortByName()
+            closeFabMenu()
+            Toast.makeText(this, getString(R.string.sort_by_name), Toast.LENGTH_SHORT).show()
+        }
+
+        // Botón ordenar por código
+        binding.fabSortByCode.setOnClickListener {
+            viewModel.sortByCode()
+            closeFabMenu()
+            Toast.makeText(this, getString(R.string.sort_by_code), Toast.LENGTH_SHORT).show()
+        }
+
+        // Botón ordenar por usuario
+        binding.fabSortByUser.setOnClickListener {
+            viewModel.sortByUser()
+            closeFabMenu()
+            Toast.makeText(this, getString(R.string.sort_by_user), Toast.LENGTH_SHORT).show()
+        }
+
+        // Botón cerrar sesión
+        binding.fabLogout.setOnClickListener {
+            closeFabMenu()
+            showLogoutConfirmationDialog()
+        }
+    }
+
+    private fun openFabMenu() {
+        isFabMenuOpen = true
+
+        // Rotar el FAB principal
+        binding.fabMenu.animate().rotation(45f).setDuration(300).start()
+
+        // Mostrar botones con animación
+        binding.fabSortByName.show()
+        binding.fabSortByNameLabel.visibility = View.VISIBLE
+
+        binding.fabSortByCode.show()
+        binding.fabSortByCodeLabel.visibility = View.VISIBLE
+
+        binding.fabSortByUser.show()
+        binding.fabSortByUserLabel.visibility = View.VISIBLE
+
+        binding.fabLogout.show()
+        binding.fabLogoutLabel.visibility = View.VISIBLE
+    }
+
+    private fun closeFabMenu() {
+        isFabMenuOpen = false
+
+        // Restaurar rotación del FAB principal
+        binding.fabMenu.animate().rotation(0f).setDuration(300).start()
+
+        // Ocultar botones
+        binding.fabSortByName.hide()
+        binding.fabSortByNameLabel.visibility = View.GONE
+
+        binding.fabSortByCode.hide()
+        binding.fabSortByCodeLabel.visibility = View.GONE
+
+        binding.fabSortByUser.hide()
+        binding.fabSortByUserLabel.visibility = View.GONE
+
+        binding.fabLogout.hide()
+        binding.fabLogoutLabel.visibility = View.GONE
+    }
+
+    private fun showLogoutConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.logout)
+            .setMessage(R.string.confirm_logout)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                logout()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun logout() {
+        // Limpiar sesión
+        UserSession.logout()
+
+        // Ir a LoginActivity
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun observeViewModel() {

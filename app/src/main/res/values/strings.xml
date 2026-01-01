@@ -13,4 +13,10 @@
     <string name="delete_success">Lectura eliminada correctamente</string>
     <string name="delete_error">Error al eliminar la lectura</string>
     <string name="search_hint">Buscar por nombre</string>
+    <string name="menu_button">Menú</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="sort_by_name">Ordenar por nombre</string>
+    <string name="sort_by_code">Ordenar por código contador</string>
+    <string name="sort_by_user">Ordenar por usuario</string>
+    <string name="confirm_logout">¿Estás seguro de que deseas cerrar sesión?</string>
 </resources>

@@ -118,5 +118,29 @@ class HomeViewModel : ViewModel() {
             _contadores.value = filtered
         }
     }
+
+    /**
+     * Ordena los contadores por nombre
+     */
+    fun sortByName() {
+        val currentList = _contadores.value ?: return
+        _contadores.value = currentList.sortedBy { it.nombre.lowercase() }
+    }
+
+    /**
+     * Ordena los contadores por código de contador
+     */
+    fun sortByCode() {
+        val currentList = _contadores.value ?: return
+        _contadores.value = currentList.sortedBy { it.codigoContador.toIntOrNull() ?: 0 }
+    }
+
+    /**
+     * Ordena los contadores por usuario anterior
+     */
+    fun sortByUser() {
+        val currentList = _contadores.value ?: return
+        _contadores.value = currentList.sortedBy { it.usuarioAnterior.toIntOrNull() ?: 0 }
+    }
 }
 
