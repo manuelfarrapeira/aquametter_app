@@ -7,4 +7,9 @@
     <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
     <string name="error_empty_fields">Por favor, completa todos los campos</string>
     <string name="greeting_message">¡Bienvenido a Aquameter!</string>
+    <string name="contador_format">Contador: %s</string>
+    <string name="delete_lectura">Eliminar lectura</string>
+    <string name="confirm_delete_lectura">¿Estás seguro de que deseas eliminar esta lectura?</string>
+    <string name="delete_success">Lectura eliminada correctamente</string>
+    <string name="delete_error">Error al eliminar la lectura</string>
 </resources>
