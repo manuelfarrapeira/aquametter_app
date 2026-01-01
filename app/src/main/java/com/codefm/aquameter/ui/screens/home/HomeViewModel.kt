@@ -17,6 +17,8 @@ class HomeViewModel : ViewModel() {
     private val contadorService = ContadorService()
     private val lecturaService = LecturaService()
 
+    private var allContadores: List<Contador> = emptyList()
+
     private val _contadores = MutableLiveData<List<Contador>>()
     val contadores: LiveData<List<Contador>> = _contadores
 
@@ -54,6 +56,7 @@ class HomeViewModel : ViewModel() {
                 val result = contadorService.getContadores(idTraida)
 
                 if (result != null) {
+                    allContadores = result
                     _contadores.value = result
                 } else {
                     _errorMessage.value = "No se pudieron cargar los contadores"
@@ -97,6 +100,23 @@ class HomeViewModel : ViewModel() {
      */
     fun resetDeleteSuccess() {
         _deleteSuccess.value = false
+    }
+
+    /**
+     * Filtra los contadores por nombre
+     * @param query texto de búsqueda
+     */
+    fun filterContadores(query: String) {
+        if (query.isBlank()) {
+            // Si no hay texto de búsqueda, mostrar todos
+            _contadores.value = allContadores
+        } else {
+            // Filtrar por nombre (case insensitive)
+            val filtered = allContadores.filter { contador ->
+                contador.nombre.contains(query, ignoreCase = true)
+            }
+            _contadores.value = filtered
+        }
     }
 }
 

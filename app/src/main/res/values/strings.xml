@@ -12,4 +12,5 @@
     <string name="confirm_delete_lectura">¿Estás seguro de que deseas eliminar esta lectura?</string>
     <string name="delete_success">Lectura eliminada correctamente</string>
     <string name="delete_error">Error al eliminar la lectura</string>
+    <string name="search_hint">Buscar por nombre</string>
 </resources>

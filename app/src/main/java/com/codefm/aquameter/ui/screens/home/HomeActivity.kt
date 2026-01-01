@@ -28,14 +28,61 @@ class HomeActivity : AppCompatActivity() {
         val traidaName = UserSession.nombre ?: "Aquameter"
         binding.traidaNameText.text = traidaName
 
+        setupSearchFunctionality()
+        setupSwipeRefresh()
         observeViewModel()
         viewModel.loadContadores()
+    }
+
+    private fun setupSearchFunctionality() {
+        // Toggle del campo de búsqueda al hacer clic en el icono
+        binding.searchIcon.setOnClickListener {
+            if (binding.searchInputLayout.visibility == View.GONE) {
+                binding.searchInputLayout.visibility = View.VISIBLE
+                binding.searchInput.requestFocus()
+                // Mostrar el teclado
+                val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.showSoftInput(binding.searchInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            } else {
+                binding.searchInputLayout.visibility = View.GONE
+                binding.searchInput.text?.clear()
+                viewModel.filterContadores("")
+                // Ocultar el teclado
+                val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.hideSoftInputFromWindow(binding.searchInput.windowToken, 0)
+            }
+        }
+
+        // Filtrar mientras el usuario escribe
+        binding.searchInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                viewModel.filterContadores(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
+
+    private fun setupSwipeRefresh() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.loadContadores()
+        }
+        // Configurar colores del indicador de refresh
+        binding.swipeRefreshLayout.setColorSchemeResources(
+            R.color.primary,
+            android.R.color.holo_blue_dark,
+            android.R.color.holo_green_dark
+        )
     }
 
     private fun observeViewModel() {
         // Observar estado de carga
         viewModel.isLoading.observe(this) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            // Detener el refresh cuando termine la carga
+            if (!isLoading) {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
         }
 
         // Observar errores

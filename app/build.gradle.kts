@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.material)
+    implementation(libs.androidx.swiperefreshlayout)
 
     // Retrofit para llamadas HTTP
     implementation(libs.retrofit)

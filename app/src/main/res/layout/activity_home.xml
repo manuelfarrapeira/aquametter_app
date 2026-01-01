@@ -25,15 +25,62 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/traidaNameText"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:gravity="center"
-                tools:text="Traida De Prueba" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/traidaNameText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:gravity="center"
+                    tools:text="Traida De Prueba" />
+
+                <ImageView
+                    android:id="@+id/searchIcon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_search"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/search_hint"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:tint="@android:color/white" />
+
+            </LinearLayout>
+
+            <!-- Campo de búsqueda (inicialmente oculto) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/searchInputLayout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                android:hint="@string/search_hint"
+                app:boxStrokeColor="@android:color/white"
+                app:hintTextColor="@android:color/white"
+                app:endIconMode="clear_text"
+                app:endIconTint="@android:color/white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#CCFFFFFF"
+                    android:imeOptions="actionSearch" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
@@ -65,26 +112,35 @@
         tools:text="Error al cargar contadores"
         tools:visibility="visible" />
 
-    <ListView
-        android:id="@+id/contadoresListView"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="gone"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="8dp"
-        android:background="@android:color/transparent"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="16dp"
-        android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/headerCard"
+        android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:visibility="visible"
-        tools:listitem="@layout/item_contador" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerCard"
+        app:layout_constraintVertical_bias="1.0">
+
+        <ListView
+            android:id="@+id/contadoresListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:clipToPadding="false"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:visibility="gone"
+            tools:listitem="@layout/item_contador"
+            tools:visibility="visible" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
