@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.codefm.aquameter.R
 import com.codefm.aquameter.databinding.ActivityHomeBinding
+import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.ui.adapters.ContadorAdapter
 
 /**
@@ -22,6 +23,10 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Mostrar nombre de la traída
+        val traidaName = UserSession.nombre ?: "Aquameter"
+        binding.traidaNameText.text = traidaName
 
         observeViewModel()
         viewModel.loadContadores()

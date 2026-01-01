@@ -11,4 +11,5 @@
     <!-- Aquameter colors -->
     <color name="primary">#FF1976D2</color>
     <color name="error">#FFB00020</color>
+    <color name="sky_blue">#E3F2FD</color>
 </resources>

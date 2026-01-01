@@ -50,12 +50,8 @@ class ContadorAdapter(
                 onDeleteClick(contador)
             }
         } else {
-            // Restaurar fondo por defecto
-            val attrs = intArrayOf(android.R.attr.selectableItemBackground)
-            val typedArray = context.obtainStyledAttributes(attrs)
-            val backgroundResource = typedArray.getResourceId(0, 0)
-            itemContainer.setBackgroundResource(backgroundResource)
-            typedArray.recycle()
+            // Restaurar fondo blanco con bordes redondeados
+            itemContainer.setBackgroundResource(R.drawable.bg_item_contador)
 
             // Ocultar botón de eliminar
             deleteButton.visibility = View.GONE
