@@ -12,10 +12,12 @@ import com.codefm.aquameter.databinding.ActivityHomeBinding
 import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.ui.adapters.ContadorAdapter
 import com.codefm.aquameter.ui.screens.login.LoginActivity
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Activity de Home que muestra la lista de contadores
  */
+@AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding

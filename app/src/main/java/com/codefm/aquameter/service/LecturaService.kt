@@ -1,13 +1,16 @@
 package com.codefm.aquameter.service
 
-import com.codefm.aquameter.api.RetrofitClient
+import com.codefm.aquameter.api.ApiService
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Servicio para gestionar lecturas
  */
-class LecturaService {
-
-    private val apiService = RetrofitClient.apiService
+@Singleton
+class LecturaService @Inject constructor(
+    private val apiService: ApiService
+) {
 
     /**
      * Elimina una lectura

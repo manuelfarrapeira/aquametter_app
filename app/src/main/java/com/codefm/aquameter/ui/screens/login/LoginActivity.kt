@@ -9,10 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import com.codefm.aquameter.databinding.ActivityLoginBinding
 import com.codefm.aquameter.ui.screens.home.HomeActivity
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Activity de login con diseño elegante tipo card
  */
+@AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding

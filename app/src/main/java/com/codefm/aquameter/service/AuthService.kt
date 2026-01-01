@@ -1,14 +1,17 @@
 package com.codefm.aquameter.service
 
-import com.codefm.aquameter.api.RetrofitClient
+import com.codefm.aquameter.api.ApiService
 import com.codefm.aquameter.model.UserSession
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Servicio de autenticación para validar credenciales de usuario
  */
-class AuthService {
-
-    private val apiService = RetrofitClient.apiService
+@Singleton
+class AuthService @Inject constructor(
+    private val apiService: ApiService
+) {
 
     /**
      * Valida las credenciales de login contra la API

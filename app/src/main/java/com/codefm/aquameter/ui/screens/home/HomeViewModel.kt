@@ -8,14 +8,18 @@ import com.codefm.aquameter.model.Contador
 import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.service.ContadorService
 import com.codefm.aquameter.service.LecturaService
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * ViewModel para la pantalla de Home
  */
-class HomeViewModel : ViewModel() {
-    private val contadorService = ContadorService()
-    private val lecturaService = LecturaService()
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val contadorService: ContadorService,
+    private val lecturaService: LecturaService
+) : ViewModel() {
 
     private var allContadores: List<Contador> = emptyList()
 

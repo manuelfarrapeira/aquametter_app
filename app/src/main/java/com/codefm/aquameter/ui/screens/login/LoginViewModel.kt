@@ -5,7 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codefm.aquameter.service.AuthService
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Estado de la UI de login
@@ -21,8 +23,10 @@ data class LoginUiState(
 /**
  * ViewModel para la pantalla de login
  */
-class LoginViewModel : ViewModel() {
-    private val authService = AuthService()
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val authService: AuthService
+) : ViewModel() {
 
     private val _uiState = MutableLiveData(LoginUiState())
     val uiState: LiveData<LoginUiState> = _uiState

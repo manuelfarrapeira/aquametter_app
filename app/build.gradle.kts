@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -58,6 +60,10 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+
+    // Hilt para inyección de dependencias
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

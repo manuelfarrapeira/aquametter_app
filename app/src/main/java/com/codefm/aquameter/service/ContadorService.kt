@@ -1,14 +1,15 @@
 package com.codefm.aquameter.service
 
-import com.codefm.aquameter.api.RetrofitClient
+import com.codefm.aquameter.api.ApiService
 import com.codefm.aquameter.model.Contador
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Servicio para obtener contadores desde la API
  */
-class ContadorService {
-
-    private val apiService = RetrofitClient.apiService
+@Singleton
+class ContadorService @Inject constructor(private val apiService: ApiService) {
 
     /**
      * Obtiene la lista de contadores para una traida
