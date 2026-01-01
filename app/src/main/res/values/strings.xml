@@ -46,4 +46,5 @@
     <string name="lectura_ya_registrada">Lectura ya registrada</string>
     <string name="mensaje_lectura_ya_registrada">Este contador ya tiene una lectura registrada el día de hoy. No se puede agregar otra medición hasta mañana.</string>
     <string name="entendido">OK</string>
+    <string name="exito">Éxito</string>
 </resources>
