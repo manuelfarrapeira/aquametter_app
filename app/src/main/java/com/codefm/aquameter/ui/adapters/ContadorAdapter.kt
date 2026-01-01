@@ -36,11 +36,26 @@ class ContadorAdapter(
         nombreText.text = contador.nombre
         contadorText.text = context.getString(R.string.contador_format, contador.codigoContador)
 
-        // Aplicar fondo verde y mostrar botón eliminar solo si la lectura es de hoy
-        if (contador.isToday()) {
-            itemContainer.setBackgroundResource(R.drawable.bg_today_item)
+        // Determinar el drawable según el exceso y si es de hoy
+        val isToday = contador.isToday()
 
-            // Mostrar botón de eliminar y configurarlo
+        val backgroundDrawable = if (isToday) {
+            // Items de hoy: aplicar esquema de colores según exceso
+            val exceso = contador.getLastExceso()
+            when {
+                exceso > 0 -> R.drawable.bg_today_exceso
+                exceso < 0 -> R.drawable.bg_today_sin_exceso
+                else -> R.drawable.bg_today_0
+            }
+        } else {
+            // Items de otros días: siempre borde verde con fondo blanco
+            R.drawable.bg_item_border_green
+        }
+
+        itemContainer.setBackgroundResource(backgroundDrawable)
+
+        // Mostrar botón de eliminar solo si la lectura es de hoy
+        if (isToday) {
             deleteButton.visibility = View.VISIBLE
             ImageViewCompat.setImageTintList(
                 deleteButton,
@@ -50,10 +65,6 @@ class ContadorAdapter(
                 onDeleteClick(contador)
             }
         } else {
-            // Restaurar fondo blanco con bordes redondeados
-            itemContainer.setBackgroundResource(R.drawable.bg_item_contador)
-
-            // Ocultar botón de eliminar
             deleteButton.visibility = View.GONE
         }
 
