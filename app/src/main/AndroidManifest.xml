@@ -29,6 +29,7 @@
         <activity
             android:name=".ui.screens.login.LoginActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Aquameter.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,11 +42,13 @@
         <activity
             android:name=".ui.screens.home.HomeActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Aquameter" />
 
         <activity
             android:name=".ui.screens.medicion.MedicionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Aquameter" />
     </application>
 

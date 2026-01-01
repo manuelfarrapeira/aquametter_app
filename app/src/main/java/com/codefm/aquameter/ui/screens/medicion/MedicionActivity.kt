@@ -1,6 +1,8 @@
 package com.codefm.aquameter.ui.screens.medicion
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
@@ -9,6 +11,7 @@ import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.codefm.aquameter.R
 import com.codefm.aquameter.databinding.DialogMedicionBinding
 import com.codefm.aquameter.model.Contador
@@ -29,6 +32,23 @@ class MedicionActivity : AppCompatActivity() {
 
     private var capturedBitmap: Bitmap? = null
     private var photoBase64: String? = null
+
+    // Launcher para solicitar permiso de cámara
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permiso concedido, abrir cámara
+            launchCamera()
+        } else {
+            // Permiso denegado, mostrar mensaje
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Permiso de cámara requerido")
+                .setMessage("Para tomar fotos de las mediciones, necesitas otorgar el permiso de cámara en la configuración de la aplicación.")
+                .setPositiveButton("OK", null)
+                .show()
+        }
+    }
 
     // Launcher para la cámara nativa
     private val takePictureLauncher = registerForActivityResult(
@@ -125,6 +145,34 @@ class MedicionActivity : AppCompatActivity() {
     }
 
     private fun openNativeCamera() {
+        // Verificar si el permiso de cámara está concedido
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // Permiso ya concedido, abrir cámara
+                launchCamera()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+                // Mostrar explicación de por qué necesitamos el permiso
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Permiso de cámara necesario")
+                    .setMessage("La aplicación necesita acceso a la cámara para tomar fotos de las mediciones del contador.")
+                    .setPositiveButton("Otorgar permiso") { _, _ ->
+                        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
+            else -> {
+                // Solicitar permiso directamente
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun launchCamera() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) != null) {
             takePictureLauncher.launch(takePictureIntent)
