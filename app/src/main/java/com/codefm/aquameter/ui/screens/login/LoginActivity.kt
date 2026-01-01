@@ -58,11 +58,15 @@ class LoginActivity : AppCompatActivity() {
         // Observar estado de carga
         viewModel.isLoading.observe(this) { isLoading ->
             if (isLoading) {
+                // Estado de carga: deshabilitar inputs y mostrar spinner
+                binding.loginButton.text = "Iniciando sesión..."
                 binding.loginButton.isEnabled = false
                 binding.usernameInput.isEnabled = false
                 binding.passwordInput.isEnabled = false
                 binding.progressIndicator.visibility = View.VISIBLE
             } else {
+                // Estado normal: habilitar inputs y ocultar spinner
+                binding.loginButton.text = getString(com.codefm.aquameter.R.string.login_button)
                 binding.loginButton.isEnabled = true
                 binding.usernameInput.isEnabled = true
                 binding.passwordInput.isEnabled = true

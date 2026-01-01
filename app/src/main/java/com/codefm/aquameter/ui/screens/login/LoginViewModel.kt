@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codefm.aquameter.service.AuthService
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -74,30 +73,38 @@ class LoginViewModel : ViewModel() {
             (isLoading as MutableLiveData).value = true
             (errorMessage as MutableLiveData).value = null
 
-            // Simular delay de red (opcional)
-            delay(500)
+            try {
+                // Validar credenciales contra la API
+                val isValid = authService.validateLogin(
+                    currentState.username,
+                    currentState.password
+                )
 
-            // Validar credenciales
-            val isValid = authService.validateLogin(
-                currentState.username,
-                currentState.password
-            )
-
-            if (isValid) {
+                if (isValid) {
+                    _uiState.value = currentState.copy(
+                        isLoading = false,
+                        isLoginSuccessful = true,
+                        errorMessage = null
+                    )
+                    (isLoading as MutableLiveData).value = false
+                    (isLoginSuccessful as MutableLiveData).value = true
+                } else {
+                    _uiState.value = currentState.copy(
+                        isLoading = false,
+                        errorMessage = "Usuario o contraseña incorrectos"
+                    )
+                    (isLoading as MutableLiveData).value = false
+                    (errorMessage as MutableLiveData).value = "Usuario o contraseña incorrectos"
+                }
+            } catch (e: Exception) {
+                // Manejo de errores de red u otros errores
                 _uiState.value = currentState.copy(
                     isLoading = false,
-                    isLoginSuccessful = true,
-                    errorMessage = null
+                    errorMessage = "Error de conexión. Verifica tu internet e intenta de nuevo."
                 )
                 (isLoading as MutableLiveData).value = false
-                (isLoginSuccessful as MutableLiveData).value = true
-            } else {
-                _uiState.value = currentState.copy(
-                    isLoading = false,
-                    errorMessage = "Usuario o contraseña incorrectos"
-                )
-                (isLoading as MutableLiveData).value = false
-                (errorMessage as MutableLiveData).value = "Usuario o contraseña incorrectos"
+                (errorMessage as MutableLiveData).value = "Error de conexión. Verifica tu internet e intenta de nuevo."
+                e.printStackTrace()
             }
         }
     }
