@@ -19,4 +19,31 @@
     <string name="sort_by_code">Ordenar por código contador</string>
     <string name="sort_by_user">Ordenar por usuario</string>
     <string name="confirm_logout">¿Estás seguro de que deseas cerrar sesión?</string>
+
+    <!-- Medición -->
+    <string name="medicion_title">Registrar Medición</string>
+    <string name="ultima_lectura_label">Última lectura:</string>
+    <string name="ultima_lectura_con_fecha">Última lectura: %1$s %2$s (%3$s)</string>
+    <string name="medicion_hint">Medición</string>
+    <string name="nota_hint">Nota (opcional)</string>
+    <string name="tomar_foto">Tomar Foto</string>
+    <string name="ver_foto">Ver Foto</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="enviar">Enviar</string>
+    <string name="consumo_label">Consumo:</string>
+    <string name="exceso_label">Exceso:</string>
+    <string name="dias_label">Días:</string>
+    <string name="error_campo_obligatorio">Campo obligatorio</string>
+    <string name="reinicio_contador">Reinicio de contador</string>
+    <string name="consumo_no_superado">Consumo máximo no superado</string>
+    <string name="enviando_lectura">Enviando lectura…</string>
+    <string name="lectura_enviada_exitosamente">Lectura enviada correctamente</string>
+    <string name="error_enviar_lectura">Error al enviar la lectura</string>
+    <string name="foto_capturada">Foto capturada</string>
+    <string name="error_captura_foto">Error al capturar foto</string>
+    <string name="permiso_camara_denegado">Permiso de cámara denegado</string>
+    <string name="lectura_ya_registrada">Lectura ya registrada</string>
+    <string name="mensaje_lectura_ya_registrada">Este contador ya tiene una lectura registrada el día de hoy. No se puede agregar otra medición hasta mañana.</string>
+    <string name="entendido">Entendido</string>
 </resources>

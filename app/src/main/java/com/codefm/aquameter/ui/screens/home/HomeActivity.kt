@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +13,8 @@ import com.codefm.aquameter.databinding.ActivityHomeBinding
 import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.ui.adapters.ContadorAdapter
 import com.codefm.aquameter.ui.screens.login.LoginActivity
+import com.codefm.aquameter.ui.screens.medicion.MedicionActivity
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -23,6 +26,16 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private val viewModel: HomeViewModel by viewModels()
     private var isFabMenuOpen = false
+
+    // Launcher para recibir resultado de MedicionActivity
+    private val medicionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Recargar contadores después de agregar medición
+            viewModel.loadContadores()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -205,10 +218,18 @@ class HomeActivity : AppCompatActivity() {
         // Observar lista de contadores
         viewModel.contadores.observe(this) { contadores ->
             if (contadores.isNotEmpty()) {
-                val adapter = ContadorAdapter(this, contadores) { contador ->
-                    // Mostrar diálogo de confirmación antes de eliminar
-                    showDeleteConfirmationDialog(contador.idLastLectura)
-                }
+                val adapter = ContadorAdapter(
+                    context = this,
+                    contadores = contadores,
+                    onDeleteClick = { contador ->
+                        // Mostrar diálogo de confirmación antes de eliminar
+                        showDeleteConfirmationDialog(contador.idLastLectura)
+                    },
+                    onItemClick = { contador ->
+                        // Abrir formulario de medición
+                        openMedicionActivity(contador)
+                    }
+                )
                 binding.contadoresListView.adapter = adapter
                 binding.contadoresListView.visibility = View.VISIBLE
                 binding.errorText.visibility = View.GONE
@@ -240,6 +261,24 @@ class HomeActivity : AppCompatActivity() {
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    private fun openMedicionActivity(contador: com.codefm.aquameter.model.Contador) {
+        // Verificar si ya hay una lectura de hoy
+        if (contador.isToday()) {
+            // Mostrar mensaje informativo
+            AlertDialog.Builder(this)
+                .setTitle(R.string.lectura_ya_registrada)
+                .setMessage(R.string.mensaje_lectura_ya_registrada)
+                .setPositiveButton(R.string.entendido, null)
+                .show()
+            return
+        }
+
+        // Si no hay lectura de hoy, abrir el formulario
+        val intent = Intent(this, MedicionActivity::class.java)
+        intent.putExtra("contador", Gson().toJson(contador))
+        medicionLauncher.launch(intent)
     }
 }
 

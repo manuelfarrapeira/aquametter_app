@@ -186,5 +186,93 @@ data class Contador(
             else -> "#FFC107" // Amarillo
         }
     }
+
+    /**
+     * Calcula los días desde la última lectura hasta hoy
+     */
+    fun getDias(): Int {
+        return try {
+            val ultimaDate = parseDateFromString(fechaLectura)
+            val hoy = java.util.Calendar.getInstance().time
+
+            if (ultimaDate != null) {
+                val diffMillis = hoy.time - ultimaDate.time
+                val days = (diffMillis / (1000 * 60 * 60 * 24)).toInt()
+                if (days > 0) days else 1
+            } else {
+                1
+            }
+        } catch (e: Exception) {
+            1
+        }
+    }
+
+    /**
+     * Obtiene la unidad formateada
+     */
+    fun getFormatedUnidad(): String {
+        return when (unidad) {
+            "m3l" -> "m³"
+            "m3" -> "m³"
+            "l" -> "l"
+            else -> unidad
+        }
+    }
+
+    /**
+     * Calcula el consumo dado una nueva lectura
+     * @param nuevaLectura nueva lectura del contador
+     * @return String con el consumo formateado
+     */
+    fun getConsumo(nuevaLectura: Double): String {
+        val ultimaLect = ultimaLectura.toDoubleOrNull() ?: 0.0
+        var diff = round(nuevaLectura - ultimaLect, 3)
+
+        if (unidad == "m3l") {
+            diff *= 1000
+        }
+
+        return if (unidad == "m3") {
+            "$diff ${getFormatedUnidad()}"
+        } else {
+            "${diff.toLong()} ${getFormatedUnidad()}"
+        }
+    }
+
+    /**
+     * Calcula el exceso dado una nueva lectura
+     * @param nuevaLectura nueva lectura del contador
+     * @return String con el exceso formateado, o vacío si no hay exceso
+     */
+    fun getExceso(nuevaLectura: Double): String {
+        val dias = getDias()
+        val litrosDia = getLitrosDia()
+        val unidadFam = unidadFamiliar.toIntOrNull() ?: 0
+
+        val maxConsumo = if (unidadFam > 0) {
+            dias * litrosDia * unidadFam
+        } else {
+            dias * litrosDia
+        }
+
+        val ultimaLect = ultimaLectura.toDoubleOrNull() ?: 0.0
+        var diff = round(nuevaLectura - ultimaLect, 3)
+
+        if (unidad == "m3l") {
+            diff *= 1000
+        }
+
+        val exceso = round(diff - maxConsumo, 3)
+
+        if (exceso > 0) {
+            return if (unidad == "m3") {
+                "$exceso ${getFormatedUnidad()}"
+            } else {
+                "${exceso.toLong()} ${getFormatedUnidad()}"
+            }
+        }
+
+        return ""
+    }
 }
 

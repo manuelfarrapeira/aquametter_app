@@ -4,6 +4,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <application
         android:name=".AquameterApplication"
@@ -29,6 +34,11 @@
 
         <activity
             android:name=".ui.screens.home.HomeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Aquameter" />
+
+        <activity
+            android:name=".ui.screens.medicion.MedicionActivity"
             android:exported="false"
             android:theme="@style/Theme.Aquameter" />
     </application>

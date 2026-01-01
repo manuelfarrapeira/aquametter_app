@@ -19,7 +19,8 @@ import com.codefm.aquameter.model.Contador
 class ContadorAdapter(
     context: Context,
     private val contadores: List<Contador>,
-    private val onDeleteClick: (Contador) -> Unit
+    private val onDeleteClick: (Contador) -> Unit,
+    private val onItemClick: (Contador) -> Unit
 ) : ArrayAdapter<Contador>(context, R.layout.item_contador, contadores) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -35,6 +36,11 @@ class ContadorAdapter(
 
         nombreText.text = contador.nombre
         contadorText.text = context.getString(R.string.contador_format, contador.codigoContador)
+
+        // Click en el item completo
+        itemContainer.setOnClickListener {
+            onItemClick(contador)
+        }
 
         // Determinar el drawable según el exceso y si es de hoy
         val isToday = contador.isToday()
