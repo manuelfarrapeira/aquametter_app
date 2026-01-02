@@ -53,6 +53,18 @@ class HomeActivity : AppCompatActivity() {
         viewModel.loadContadores()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Verificar si la sesión ha expirado
+        if (!UserSession.isLoggedIn) {
+            // Sesión expirada, redirigir al login de forma silenciosa
+            navigateToLogin()
+            return
+        }
+        // Renovar el tiempo de actividad
+        UserSession.updateActivity()
+    }
+
     private fun setupSearchFunctionality() {
         // Toggle del campo de búsqueda al hacer clic en el icono
         binding.searchIcon.setOnClickListener {
@@ -188,6 +200,14 @@ class HomeActivity : AppCompatActivity() {
         UserSession.logout()
 
         // Ir a LoginActivity
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    private fun navigateToLogin() {
+        // Ir a LoginActivity sin limpiar explícitamente la sesión (ya expiró)
         val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import com.codefm.aquameter.databinding.ActivityLoginBinding
+import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.ui.screens.home.HomeActivity
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,6 +23,13 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Verificar si ya hay una sesión activa
+        if (UserSession.isLoggedIn) {
+            navigateToHome()
+            return
+        }
+
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

@@ -15,6 +15,8 @@ import androidx.core.content.ContextCompat
 import com.codefm.aquameter.R
 import com.codefm.aquameter.databinding.DialogMedicionBinding
 import com.codefm.aquameter.model.Contador
+import com.codefm.aquameter.model.UserSession
+import com.codefm.aquameter.ui.screens.login.LoginActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
@@ -84,6 +86,18 @@ class MedicionActivity : AppCompatActivity() {
 
         setupViews()
         observeViewModel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Verificar si la sesión ha expirado
+        if (!UserSession.isLoggedIn) {
+            // Sesión expirada, redirigir al login de forma silenciosa
+            navigateToLogin()
+            return
+        }
+        // Renovar el tiempo de actividad
+        UserSession.updateActivity()
     }
 
     private fun setupViews() {
@@ -275,6 +289,14 @@ class MedicionActivity : AppCompatActivity() {
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    private fun navigateToLogin() {
+        // Ir a LoginActivity cuando la sesión ha expirado
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
 

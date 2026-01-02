@@ -15,12 +15,17 @@ object UserSession {
     private const val KEY_ID_TRAIDA = "id_traida"
     private const val KEY_NOMBRE = "nombre"
     private const val KEY_ID_USUARIO = "id_usuario"
+    private const val KEY_LAST_ACTIVITY = "last_activity_time"
+
+    // 3 horas en milisegundos
+    private const val SESSION_TIMEOUT = 3 * 60 * 60 * 1000L // 10,800,000 ms
 
     private var prefs: SharedPreferences? = null
 
     private var _idTraida: String? = null
     private var _nombre: String? = null
     private var _idUsuario: String? = null
+    private var _lastActivityTime: Long = 0L
 
     /**
      * Inicializa el UserSession con el contexto de la aplicación
@@ -39,6 +44,7 @@ object UserSession {
             _idTraida = it.getString(KEY_ID_TRAIDA, null)
             _nombre = it.getString(KEY_NOMBRE, null)
             _idUsuario = it.getString(KEY_ID_USUARIO, null)
+            _lastActivityTime = it.getLong(KEY_LAST_ACTIVITY, 0L)
         }
     }
 
@@ -50,6 +56,7 @@ object UserSession {
             putString(KEY_ID_TRAIDA, _idTraida)
             putString(KEY_NOMBRE, _nombre)
             putString(KEY_ID_USUARIO, _idUsuario)
+            putLong(KEY_LAST_ACTIVITY, _lastActivityTime)
         }
     }
 
@@ -72,10 +79,20 @@ object UserSession {
         get() = _idUsuario
 
     /**
-     * Indica si hay una sesión activa
+     * Indica si hay una sesión activa y no ha expirado
      */
     val isLoggedIn: Boolean
-        get() = _idTraida != null && _idUsuario != null
+        get() = _idTraida != null && _idUsuario != null && !isSessionExpired()
+
+    /**
+     * Verifica si la sesión ha expirado (más de 3 horas de inactividad)
+     */
+    fun isSessionExpired(): Boolean {
+        if (_lastActivityTime == 0L) return true
+        val currentTime = System.currentTimeMillis()
+        val timeSinceLastActivity = currentTime - _lastActivityTime
+        return timeSinceLastActivity > SESSION_TIMEOUT
+    }
 
     /**
      * Inicia sesión con los datos del usuario
@@ -84,6 +101,16 @@ object UserSession {
         _idTraida = authResponse.idTraida
         _nombre = authResponse.nombre
         _idUsuario = authResponse.id
+        _lastActivityTime = System.currentTimeMillis()
+        saveToPreferences()
+    }
+
+    /**
+     * Actualiza el tiempo de última actividad
+     * Debe llamarse en las pantallas principales para renovar la sesión
+     */
+    fun updateActivity() {
+        _lastActivityTime = System.currentTimeMillis()
         saveToPreferences()
     }
 
@@ -94,6 +121,7 @@ object UserSession {
         _idTraida = null
         _nombre = null
         _idUsuario = null
+        _lastActivityTime = 0L
         prefs?.edit { clear() }
     }
 
