@@ -218,7 +218,7 @@ data class Contador(
         return when (unidad) {
             "m3l" -> "m³"
             "m3" -> "m³"
-            "l" -> "l"
+            "l" -> "litros"
             else -> unidad
         }
     }
@@ -237,9 +237,9 @@ data class Contador(
         }
 
         return if (unidad == "m3") {
-            "$diff ${getFormatedUnidad()}"
+            "$diff m3"
         } else {
-            "${diff.toLong()} ${getFormatedUnidad()}"
+            "${diff.toLong()} litros"
         }
     }
 
@@ -290,9 +290,9 @@ data class Contador(
 
         if (exceso > 0) {
             return if (unidad == "m3") {
-                "$exceso ${getFormatedUnidad()}"
+                "$exceso m3"
             } else {
-                "${exceso.toLong()} ${getFormatedUnidad()}"
+                "${exceso.toLong()} litros"
             }
         }
 
