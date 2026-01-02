@@ -26,9 +26,9 @@ class MedicionService @Inject constructor(
      */
     fun compressAndEncodeImage(bitmap: Bitmap): String {
         return try {
-            // Redimensionar manteniendo aspect ratio a 300px de altura
+            // Redimensionar manteniendo aspect ratio a 500px de altura
             val aspectRatio = bitmap.width.toFloat() / bitmap.height.toFloat()
-            val newHeight = 300
+            val newHeight = 500
             val newWidth = (newHeight * aspectRatio).toInt()
 
             val resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)

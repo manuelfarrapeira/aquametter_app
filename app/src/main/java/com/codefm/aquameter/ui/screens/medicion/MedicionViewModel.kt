@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 /**
@@ -52,7 +53,9 @@ class MedicionViewModel @Inject constructor(
                 _successMessage.value = null
 
                 // Obtener fecha actual en formato yyyy-MM-dd
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("Europe/Madrid")
+                }
                 val fecha = dateFormat.format(Date())
 
                 // Obtener ID de usuario desde sesión
