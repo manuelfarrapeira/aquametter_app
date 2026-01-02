@@ -342,6 +342,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun openMedicionActivity(contador: com.codefm.aquameter.model.Contador) {
+        // Verificar si hay datos pendientes en caché
+        if (contador.hasPendingMedicion) {
+            showPendingMedicionInfoDialog(contador)
+            return
+        }
+
         // Verificar si ya hay una lectura de hoy
         if (contador.isToday()) {
             // Calcular información de la lectura (entre última y penúltima)
@@ -452,6 +458,83 @@ class HomeActivity : AppCompatActivity() {
             viewModel.filterPendingOnly()
             Toast.makeText(this, "Mostrando solo pendientes", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showPendingMedicionInfoDialog(contador: com.codefm.aquameter.model.Contador) {
+        // Obtener medición pendiente
+        val pendingMedicion = viewModel.getPendingMedicion(contador.id) ?: return
+
+        val litros = pendingMedicion.litros.toDoubleOrNull() ?: 0.0
+
+        // Calcular consumo, días y exceso
+        val consumo = contador.getConsumo(litros)
+        val dias = contador.getDias()
+        val exceso = contador.getExceso(litros)
+
+        // Crear diálogo con BottomSheetDialog
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_pending_medicion_info, null)
+
+        val txtPendingMedicion = view.findViewById<TextView>(R.id.txtPendingMedicion)
+        val txtPendingConsumo = view.findViewById<TextView>(R.id.txtPendingConsumo)
+        val txtPendingDias = view.findViewById<TextView>(R.id.txtPendingDias)
+        val txtPendingExceso = view.findViewById<TextView>(R.id.txtPendingExceso)
+        val btnVerFoto = view.findViewById<MaterialButton>(R.id.btnVerFoto)
+        val btnCerrarInfo = view.findViewById<MaterialButton>(R.id.btnCerrarInfo)
+
+        // Configurar textos
+        txtPendingMedicion.text = "Medición: $litros ${contador.getFormatedUnidad()}"
+        txtPendingConsumo.text = "Consumo: $consumo"
+        txtPendingDias.text = "Días: $dias"
+
+        // Mostrar exceso si existe
+        if (exceso.isNotEmpty()) {
+            txtPendingExceso.text = "Exceso: $exceso"
+            txtPendingExceso.visibility = View.VISIBLE
+        } else {
+            txtPendingExceso.text = "Consumo máximo no superado"
+            txtPendingExceso.visibility = View.VISIBLE
+        }
+
+        // Mostrar botón de ver foto si hay foto
+        if (pendingMedicion.foto.isNotEmpty()) {
+            btnVerFoto.visibility = View.VISIBLE
+            btnVerFoto.setOnClickListener {
+                showPhotoDialog(pendingMedicion.foto)
+            }
+        }
+
+        btnCerrarInfo.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
+    }
+
+    private fun showPhotoDialog(fotoBase64: String) {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_view_photo, null)
+
+        val imgFotoPreview = view.findViewById<android.widget.ImageView>(R.id.imgFotoPreview)
+        val btnCerrarFoto = view.findViewById<MaterialButton>(R.id.btnCerrarFoto)
+
+        // Decodificar base64 a Bitmap
+        try {
+            val imageBytes = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT)
+            val bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            imgFotoPreview.setImageBitmap(bitmap)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error al cargar la foto", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+
+        btnCerrarFoto.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
     }
 }
 
