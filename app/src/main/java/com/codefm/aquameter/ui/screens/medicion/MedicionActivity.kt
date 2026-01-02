@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -135,11 +136,15 @@ class MedicionActivity : AppCompatActivity() {
         // Observar estado de carga
         viewModel.isLoading.observe(this) { isLoading ->
             if (isLoading) {
+                binding.progressBar.visibility = View.VISIBLE
                 binding.btnAceptar.isEnabled = false
                 binding.btnAceptar.text = "Enviando..."
+                binding.btnCancelar.isEnabled = false
             } else {
+                binding.progressBar.visibility = View.GONE
                 binding.btnAceptar.isEnabled = true
                 binding.btnAceptar.text = "Aceptar"
+                binding.btnCancelar.isEnabled = true
             }
         }
 

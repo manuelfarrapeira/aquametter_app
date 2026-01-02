@@ -108,6 +108,7 @@ class HomeViewModel @Inject constructor(
     fun deleteLectura(idLastLectura: String) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val success = lecturaService.deleteLectura(idLastLectura)
 
                 if (success) {
@@ -115,10 +116,12 @@ class HomeViewModel @Inject constructor(
                     // Recargar la lista de contadores
                     loadContadores()
                 } else {
+                    _isLoading.value = false
                     _deleteError.value = "No se pudo eliminar la lectura"
                 }
 
             } catch (e: Exception) {
+                _isLoading.value = false
                 _deleteError.value = "Error al eliminar: ${e.message}"
                 e.printStackTrace()
             }
@@ -186,6 +189,7 @@ class HomeViewModel @Inject constructor(
     fun retrySendMedicion(contador: Contador, pendingMedicion: PendingMedicion) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val (success, message) = medicionService.addLectura(
                     fecha = pendingMedicion.fecha,
                     litros = pendingMedicion.litros,
@@ -201,9 +205,11 @@ class HomeViewModel @Inject constructor(
                     _retrySuccess.value = true
                     loadContadores()
                 } else {
+                    _isLoading.value = false
                     _retryError.value = "No se pudo enviar: $message"
                 }
             } catch (e: Exception) {
+                _isLoading.value = false
                 _retryError.value = "Error de conexión: ${e.message}"
                 e.printStackTrace()
             }
