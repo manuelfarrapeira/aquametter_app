@@ -56,4 +56,17 @@
     <string name="clear_cache_success">Medición eliminada de la caché</string>
     <string name="retry_send_success">Medición enviada correctamente</string>
     <string name="medicion_saved_locally">No se pudo enviar. La medición se guardó localmente para reenviar más tarde.</string>
+
+    <!-- Autenticación biométrica -->
+    <string name="biometric_title">Autenticación biométrica</string>
+    <string name="biometric_subtitle">Coloca tu dedo en el sensor</string>
+    <string name="biometric_description">Usa tu huella dactilar para acceder</string>
+    <string name="biometric_negative_button">Cancelar</string>
+    <string name="biometric_error">Error de autenticación</string>
+    <string name="biometric_failed">Huella no reconocida</string>
+    <string name="biometric_success">Autenticación exitosa</string>
+    <string name="biometric_not_available">Autenticación biométrica no disponible</string>
+    <string name="biometric_save_prompt">¿Deseas guardar tus credenciales para usar huella dactilar en el futuro?</string>
+    <string name="biometric_saved">Huella dactilar configurada correctamente</string>
+    <string name="biometric_credentials_changed">Las credenciales han cambiado. Configura la huella dactilar nuevamente.</string>
 </resources>
