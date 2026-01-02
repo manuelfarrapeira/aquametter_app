@@ -5,8 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codefm.aquameter.model.PendingMedicion
 import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.service.MedicionService
+import com.codefm.aquameter.service.PendingMedicionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -19,7 +21,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MedicionViewModel @Inject constructor(
-    private val medicionService: MedicionService
+    private val medicionService: MedicionService,
+    private val pendingRepository: PendingMedicionRepository
 ) : ViewModel() {
 
     private val _isLoading = MutableLiveData<Boolean>()
@@ -74,14 +77,24 @@ class MedicionViewModel @Inject constructor(
                 _isLoading.value = false
 
                 if (success) {
+                    // Si se envió correctamente, eliminar de caché si existía
+                    pendingRepository.deletePendingMedicion(idContador)
                     _successMessage.value = message
                 } else {
-                    _errorMessage.value = message
+                    // Guardar en caché
+                    val pending = PendingMedicion(idContador, litros, nota, foto, fecha)
+                    pendingRepository.savePendingMedicion(pending)
+                    _errorMessage.value = "No se pudo enviar. La medición se guardó localmente para reenviar más tarde."
                 }
 
             } catch (e: Exception) {
                 _isLoading.value = false
-                _errorMessage.value = "Error: ${e.message}"
+                // Guardar en caché por error de red
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val fecha = dateFormat.format(Date())
+                val pending = PendingMedicion(idContador, litros, nota, foto, fecha)
+                pendingRepository.savePendingMedicion(pending)
+                _errorMessage.value = "No se pudo enviar. La medición se guardó localmente para reenviar más tarde."
                 e.printStackTrace()
             }
         }

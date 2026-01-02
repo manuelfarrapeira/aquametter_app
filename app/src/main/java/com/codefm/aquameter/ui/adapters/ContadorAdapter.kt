@@ -20,7 +20,9 @@ class ContadorAdapter(
     context: Context,
     private val contadores: List<Contador>,
     private val onDeleteClick: (Contador) -> Unit,
-    private val onItemClick: (Contador) -> Unit
+    private val onItemClick: (Contador) -> Unit,
+    private val onRetryClick: (Contador) -> Unit,
+    private val onClearCacheClick: (Contador) -> Unit
 ) : ArrayAdapter<Contador>(context, R.layout.item_contador, contadores) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -60,9 +62,34 @@ class ContadorAdapter(
 
         itemContainer.setBackgroundResource(backgroundDrawable)
 
-        // Mostrar botón de eliminar solo si la lectura es de hoy
-        if (isToday) {
+        // Obtener referencias a los botones
+        val retryButton = view.findViewById<ImageView>(R.id.retryButton)
+        val clearCacheButton = view.findViewById<ImageView>(R.id.clearCacheButton)
+
+        // Mostrar botones según estado del contador
+        if (contador.hasPendingMedicion) {
+            // Mostrar botones de pendiente
+            deleteButton.visibility = View.GONE
+            retryButton.visibility = View.VISIBLE
+            clearCacheButton.visibility = View.VISIBLE
+
+            ImageViewCompat.setImageTintList(
+                retryButton,
+                ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_green_dark))
+            )
+            ImageViewCompat.setImageTintList(
+                clearCacheButton,
+                ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_red_dark))
+            )
+
+            retryButton.setOnClickListener { onRetryClick(contador) }
+            clearCacheButton.setOnClickListener { onClearCacheClick(contador) }
+        } else if (isToday) {
+            // Mostrar botón de eliminar
             deleteButton.visibility = View.VISIBLE
+            retryButton.visibility = View.GONE
+            clearCacheButton.visibility = View.GONE
+
             ImageViewCompat.setImageTintList(
                 deleteButton,
                 ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_red_dark))
@@ -71,7 +98,10 @@ class ContadorAdapter(
                 onDeleteClick(contador)
             }
         } else {
+            // Ocultar todos los botones
             deleteButton.visibility = View.GONE
+            retryButton.visibility = View.GONE
+            clearCacheButton.visibility = View.GONE
         }
 
         return view

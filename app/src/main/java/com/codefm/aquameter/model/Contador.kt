@@ -40,7 +40,11 @@ data class Contador(
     val penultimaLectura: String,
 
     @SerializedName("penultima_fecha_lectura")
-    val penultimaFechaLectura: String
+    val penultimaFechaLectura: String,
+
+    // Propiedad transient para indicar si tiene medición pendiente
+    @Transient
+    var hasPendingMedicion: Boolean = false
 ) {
     /**
      * Verifica si la fecha de lectura es hoy

@@ -47,4 +47,13 @@
     <string name="mensaje_lectura_ya_registrada">Este contador ya tiene una lectura registrada el día de hoy. No se puede agregar otra medición hasta mañana.</string>
     <string name="entendido">OK</string>
     <string name="exito">Éxito</string>
+
+    <!-- Caché de mediciones pendientes -->
+    <string name="retry_send">Reintentar envío</string>
+    <string name="clear_cache">Eliminar de caché</string>
+    <string name="filter_pending">Filtrar pendientes</string>
+    <string name="confirm_clear_cache">¿Estás seguro de que deseas eliminar esta medición pendiente?</string>
+    <string name="clear_cache_success">Medición eliminada de la caché</string>
+    <string name="retry_send_success">Medición enviada correctamente</string>
+    <string name="medicion_saved_locally">No se pudo enviar. La medición se guardó localmente para reenviar más tarde.</string>
 </resources>

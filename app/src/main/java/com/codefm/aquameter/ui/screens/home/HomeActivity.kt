@@ -2,7 +2,9 @@ package com.codefm.aquameter.ui.screens.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -10,10 +12,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.codefm.aquameter.R
 import com.codefm.aquameter.databinding.ActivityHomeBinding
+import com.codefm.aquameter.model.PendingMedicion
 import com.codefm.aquameter.model.UserSession
 import com.codefm.aquameter.ui.adapters.ContadorAdapter
 import com.codefm.aquameter.ui.screens.login.LoginActivity
 import com.codefm.aquameter.ui.screens.medicion.MedicionActivity
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -26,6 +31,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private val viewModel: HomeViewModel by viewModels()
     private var isFabMenuOpen = false
+    private var isFilteringPending = false
 
     // Launcher para recibir resultado de MedicionActivity
     private val medicionLauncher = registerForActivityResult(
@@ -63,6 +69,10 @@ class HomeActivity : AppCompatActivity() {
         }
         // Renovar el tiempo de actividad
         UserSession.updateActivity()
+
+        // Actualizar estados de pendientes localmente (sin llamar a la API)
+        // Esto es útil cuando volvemos de la pantalla de medición después de guardar en caché
+        viewModel.refreshPendingStatesLocally()
     }
 
     private fun setupSearchFunctionality() {
@@ -137,6 +147,12 @@ class HomeActivity : AppCompatActivity() {
             Toast.makeText(this, getString(R.string.sort_by_user), Toast.LENGTH_SHORT).show()
         }
 
+        // Botón filtrar pendientes (toggle)
+        binding.fabFilterPending.setOnClickListener {
+            closeFabMenu()
+            togglePendingFilter()
+        }
+
         // Botón cerrar sesión
         binding.fabLogout.setOnClickListener {
             closeFabMenu()
@@ -160,6 +176,13 @@ class HomeActivity : AppCompatActivity() {
         binding.fabSortByUser.show()
         binding.fabSortByUserLabel.visibility = View.VISIBLE
 
+        // Mostrar botón de filtrar pendientes solo si hay pendientes
+        val hasPendientes = viewModel.hasPendingMediciones.value == true
+        if (hasPendientes) {
+            binding.fabFilterPending.show()
+            binding.fabFilterPendingLabel.visibility = View.VISIBLE
+        }
+
         binding.fabLogout.show()
         binding.fabLogoutLabel.visibility = View.VISIBLE
     }
@@ -179,6 +202,9 @@ class HomeActivity : AppCompatActivity() {
 
         binding.fabSortByUser.hide()
         binding.fabSortByUserLabel.visibility = View.GONE
+
+        binding.fabFilterPending.hide()
+        binding.fabFilterPendingLabel.visibility = View.GONE
 
         binding.fabLogout.hide()
         binding.fabLogoutLabel.visibility = View.GONE
@@ -248,11 +274,28 @@ class HomeActivity : AppCompatActivity() {
                     onItemClick = { contador ->
                         // Abrir formulario de medición
                         openMedicionActivity(contador)
+                    },
+                    onRetryClick = { contador ->
+                        // Manejar reintento de envío
+                        handleRetryMedicion(contador)
+                    },
+                    onClearCacheClick = { contador ->
+                        // Mostrar confirmación antes de limpiar caché
+                        showClearCacheConfirmationDialog(contador)
                     }
                 )
                 binding.contadoresListView.adapter = adapter
                 binding.contadoresListView.visibility = View.VISIBLE
                 binding.errorText.visibility = View.GONE
+            }
+        }
+
+        // Observar si hay mediciones pendientes
+        viewModel.hasPendingMediciones.observe(this) { hasPending ->
+            // Si no hay pendientes y estamos filtrando, desactivar filtro automáticamente
+            if (!hasPending && isFilteringPending) {
+                isFilteringPending = false
+                viewModel.showAllContadores()
             }
         }
 
@@ -268,6 +311,21 @@ class HomeActivity : AppCompatActivity() {
         viewModel.deleteError.observe(this) { error ->
             if (error != null) {
                 Toast.makeText(this, getString(R.string.delete_error) + ": $error", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        // Observar éxito al reintentar
+        viewModel.retrySuccess.observe(this) { success ->
+            if (success) {
+                Toast.makeText(this, R.string.retry_send_success, Toast.LENGTH_SHORT).show()
+                viewModel.resetRetrySuccess()
+            }
+        }
+
+        // Observar error al reintentar
+        viewModel.retryError.observe(this) { error ->
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -312,6 +370,88 @@ class HomeActivity : AppCompatActivity() {
         val intent = Intent(this, MedicionActivity::class.java)
         intent.putExtra("contador", Gson().toJson(contador))
         medicionLauncher.launch(intent)
+    }
+
+    private fun handleRetryMedicion(contador: com.codefm.aquameter.model.Contador) {
+        // Obtener medición pendiente del repositorio
+        val pendingMedicion = viewModel.getPendingMedicion(contador.id) ?: return
+
+        val litros = pendingMedicion.litros.toDoubleOrNull() ?: 0.0
+
+        // Calcular mensaje de confirmación (igual que en envío normal)
+        val message = if (litros == 0.0) {
+            "Reinicio de contador"
+        } else {
+            val exceso = contador.getExceso(litros)
+            val consumo = contador.getConsumo(litros)
+            val dias = contador.getDias()
+
+            buildString {
+                if (exceso.isEmpty()) {
+                    append("Consumo máximo no superado\n\n")
+                } else {
+                    append("Exceso: $exceso\n\n")
+                }
+                append("Consumo: $consumo\n\n")
+                append("Días: $dias")
+            }
+        }
+
+        // Mostrar confirmación con BottomSheet (igual que en MedicionActivity)
+        showRetryConfirmationBottomSheet(message, contador, pendingMedicion)
+    }
+
+    private fun showRetryConfirmationBottomSheet(
+        message: String,
+        contador: com.codefm.aquameter.model.Contador,
+        pendingMedicion: PendingMedicion
+    ) {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_confirmation, null)
+
+        val txtMessage = view.findViewById<TextView>(R.id.txtConfirmationMessage)
+        val btnEnviar = view.findViewById<MaterialButton>(R.id.btnEnviar)
+        val btnCancelar = view.findViewById<MaterialButton>(R.id.btnCancelarConfirm)
+
+        txtMessage.text = message
+
+        btnEnviar.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            viewModel.retrySendMedicion(contador, pendingMedicion)
+        }
+
+        btnCancelar.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
+    }
+
+    private fun showClearCacheConfirmationDialog(contador: com.codefm.aquameter.model.Contador) {
+        AlertDialog.Builder(this)
+            .setTitle("Eliminar medición pendiente")
+            .setMessage(R.string.confirm_clear_cache)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                viewModel.clearCachedMedicion(contador.id)
+                Toast.makeText(this, R.string.clear_cache_success, Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun togglePendingFilter() {
+        if (isFilteringPending) {
+            // Desactivar filtro
+            isFilteringPending = false
+            viewModel.showAllContadores()
+            Toast.makeText(this, "Mostrando todos los contadores", Toast.LENGTH_SHORT).show()
+        } else {
+            // Activar filtro
+            isFilteringPending = true
+            viewModel.filterPendingOnly()
+            Toast.makeText(this, "Mostrando solo pendientes", Toast.LENGTH_SHORT).show()
+        }
     }
 }
 
