@@ -84,19 +84,21 @@ class MedicionViewModel @Inject constructor(
                     pendingRepository.deletePendingMedicion(idContador)
                     _successMessage.value = message
                 } else {
-                    // Guardar en caché
-                    val pending = PendingMedicion(idContador, litros, nota, foto, fecha)
-                    pendingRepository.savePendingMedicion(pending)
+                    // Guardar en caché (foto se guarda físicamente)
+                    val pending = PendingMedicion(idContador, litros, nota, "", fecha)
+                    pendingRepository.savePendingMedicion(pending, foto)
                     _errorMessage.value = "No se pudo enviar. La medición se guardó localmente para reenviar más tarde."
                 }
 
             } catch (e: Exception) {
                 _isLoading.value = false
-                // Guardar en caché por error de red
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                // Guardar en caché por error de red (foto se guarda físicamente)
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("Europe/Madrid")
+                }
                 val fecha = dateFormat.format(Date())
-                val pending = PendingMedicion(idContador, litros, nota, foto, fecha)
-                pendingRepository.savePendingMedicion(pending)
+                val pending = PendingMedicion(idContador, litros, nota, "", fecha)
+                pendingRepository.savePendingMedicion(pending, foto)
                 _errorMessage.value = "No se pudo enviar. La medición se guardó localmente para reenviar más tarde."
                 e.printStackTrace()
             }

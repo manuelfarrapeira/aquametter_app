@@ -190,17 +190,25 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isLoading.value = true
+
+                // Convertir foto física a base64 para envío
+                val fotoBase64 = if (pendingMedicion.fotoPath.isNotEmpty()) {
+                    pendingRepository.getPhotoAsBase64(pendingMedicion.fotoPath)
+                } else {
+                    ""
+                }
+
                 val (success, message) = medicionService.addLectura(
                     fecha = pendingMedicion.fecha,
                     litros = pendingMedicion.litros,
                     idContador = pendingMedicion.idContador,
                     idUsuario = UserSession.idUsuario ?: "",
-                    foto = pendingMedicion.foto,
+                    foto = fotoBase64,
                     nota = pendingMedicion.nota
                 )
 
                 if (success) {
-                    // Eliminar de caché
+                    // Eliminar de caché (esto también elimina la foto física)
                     pendingRepository.deletePendingMedicion(pendingMedicion.idContador)
                     _retrySuccess.value = true
                     loadContadores()

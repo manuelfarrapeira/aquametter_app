@@ -497,10 +497,10 @@ class HomeActivity : AppCompatActivity() {
         }
 
         // Mostrar botón de ver foto si hay foto
-        if (pendingMedicion.foto.isNotEmpty()) {
+        if (pendingMedicion.fotoPath.isNotEmpty()) {
             btnVerFoto.visibility = View.VISIBLE
             btnVerFoto.setOnClickListener {
-                showPhotoDialog(pendingMedicion.foto)
+                showPhotoFromPath(pendingMedicion.fotoPath)
             }
         }
 
@@ -512,18 +512,21 @@ class HomeActivity : AppCompatActivity() {
         bottomSheetDialog.show()
     }
 
-    private fun showPhotoDialog(fotoBase64: String) {
+    private fun showPhotoFromPath(fotoPath: String) {
         val bottomSheetDialog = BottomSheetDialog(this)
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_view_photo, null)
 
         val imgFotoPreview = view.findViewById<android.widget.ImageView>(R.id.imgFotoPreview)
         val btnCerrarFoto = view.findViewById<MaterialButton>(R.id.btnCerrarFoto)
 
-        // Decodificar base64 a Bitmap
+        // Cargar imagen desde archivo físico
         try {
-            val imageBytes = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT)
-            val bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-            imgFotoPreview.setImageBitmap(bitmap)
+            val bitmap = android.graphics.BitmapFactory.decodeFile(fotoPath)
+            if (bitmap != null) {
+                imgFotoPreview.setImageBitmap(bitmap)
+            } else {
+                Toast.makeText(this, "Error al cargar la foto", Toast.LENGTH_SHORT).show()
+            }
         } catch (e: Exception) {
             Toast.makeText(this, "Error al cargar la foto", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
