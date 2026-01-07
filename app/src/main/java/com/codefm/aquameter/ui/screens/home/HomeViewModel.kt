@@ -53,6 +53,9 @@ class HomeViewModel @Inject constructor(
     private val _retryError = MutableLiveData<String?>()
     val retryError: LiveData<String?> = _retryError
 
+    private val _reloadError = MutableLiveData<String?>()
+    val reloadError: LiveData<String?> = _reloadError
+
     /**
      * Carga los contadores desde la API
      */
@@ -61,12 +64,19 @@ class HomeViewModel @Inject constructor(
             try {
                 _isLoading.value = true
                 _errorMessage.value = null
+                _reloadError.value = null
 
                 // Obtener el id_traida de la sesión
                 val idTraida = UserSession.idTraida
 
                 if (idTraida == null) {
-                    _errorMessage.value = "Error: No hay sesión activa"
+                    // Error de carga inicial - sin datos previos
+                    if (allContadores.isEmpty()) {
+                        _errorMessage.value = "Error: No hay sesión activa"
+                    } else {
+                        // Error de recarga - tenemos datos previos
+                        _reloadError.value = "No se pudo recargar la lista"
+                    }
                     _isLoading.value = false
                     return@launch
                 }
@@ -88,15 +98,34 @@ class HomeViewModel @Inject constructor(
 
                     // Actualizar si hay pendientes
                     _hasPendingMediciones.value = result.any { it.hasPendingMedicion }
+
+                    // Limpiar error de recarga si fue exitoso
+                    _reloadError.value = null
                 } else {
-                    _errorMessage.value = "No se pudieron cargar los contadores"
+                    // Error al obtener contadores
+                    if (allContadores.isEmpty()) {
+                        // Error de carga inicial - sin datos previos
+                        _errorMessage.value = "No se pudieron cargar los contadores"
+                    } else {
+                        // Error de recarga - tenemos datos previos
+                        _reloadError.value = "No se pudo recargar la lista"
+                    }
                 }
 
                 _isLoading.value = false
 
             } catch (e: Exception) {
                 _isLoading.value = false
-                _errorMessage.value = "Error de conexión: ${e.message}"
+
+                // Diferenciar entre error de carga inicial vs error de recarga
+                if (allContadores.isEmpty()) {
+                    // Error de carga inicial - sin datos previos
+                    _errorMessage.value = "Error de conexión: ${e.message}"
+                } else {
+                    // Error de recarga - tenemos datos previos
+                    _reloadError.value = "No se pudo recargar la lista"
+                }
+
                 e.printStackTrace()
             }
         }

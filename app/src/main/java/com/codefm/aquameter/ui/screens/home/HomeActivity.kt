@@ -19,6 +19,7 @@ import com.codefm.aquameter.ui.screens.login.LoginActivity
 import com.codefm.aquameter.ui.screens.medicion.MedicionActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -32,6 +33,7 @@ class HomeActivity : AppCompatActivity() {
     private val viewModel: HomeViewModel by viewModels()
     private var isFabMenuOpen = false
     private var isFilteringPending = false
+    private var reloadErrorSnackbar: Snackbar? = null
 
     // Launcher para recibir resultado de MedicionActivity
     private val medicionLauncher = registerForActivityResult(
@@ -326,6 +328,26 @@ class HomeActivity : AppCompatActivity() {
         viewModel.retryError.observe(this) { error ->
             if (error != null) {
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show()
+            }
+        }
+
+        // Observar error de recarga (cuando falla el pull-to-refresh pero hay datos previos)
+        viewModel.reloadError.observe(this) { error ->
+            if (error != null) {
+                // Mostrar Snackbar permanente
+                reloadErrorSnackbar?.dismiss()
+                reloadErrorSnackbar = Snackbar.make(
+                    binding.root,
+                    error,
+                    Snackbar.LENGTH_INDEFINITE
+                ).setAction("Cerrar") {
+                    reloadErrorSnackbar?.dismiss()
+                }
+                reloadErrorSnackbar?.show()
+            } else {
+                // Cerrar Snackbar si la recarga es exitosa
+                reloadErrorSnackbar?.dismiss()
+                reloadErrorSnackbar = null
             }
         }
     }
