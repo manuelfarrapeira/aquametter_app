@@ -108,7 +108,8 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.loadContadores()
+            // Pasar isRefreshing=true para que solo use el spinner del SwipeRefreshLayout
+            viewModel.loadContadores(isRefreshing = true)
         }
         // Configurar colores del indicador de refresh
         binding.swipeRefreshLayout.setColorSchemeResources(
@@ -265,6 +266,9 @@ class HomeActivity : AppCompatActivity() {
 
         // Observar lista de contadores
         viewModel.contadores.observe(this) { contadores ->
+            // Detener SwipeRefreshLayout cuando se actualiza la lista
+            binding.swipeRefreshLayout.isRefreshing = false
+
             if (contadores.isNotEmpty()) {
                 val adapter = ContadorAdapter(
                     context = this,
@@ -334,6 +338,9 @@ class HomeActivity : AppCompatActivity() {
         // Observar error de recarga (cuando falla el pull-to-refresh pero hay datos previos)
         viewModel.reloadError.observe(this) { error ->
             if (error != null) {
+                // Detener SwipeRefreshLayout en caso de error
+                binding.swipeRefreshLayout.isRefreshing = false
+
                 // Mostrar Snackbar permanente
                 reloadErrorSnackbar?.dismiss()
                 reloadErrorSnackbar = Snackbar.make(

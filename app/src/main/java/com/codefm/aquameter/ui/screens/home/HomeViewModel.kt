@@ -58,11 +58,15 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Carga los contadores desde la API
+     * @param isRefreshing indica si es una recarga (pull-to-refresh), en cuyo caso no se muestra el ProgressBar
      */
-    fun loadContadores() {
+    fun loadContadores(isRefreshing: Boolean = false) {
         viewModelScope.launch {
             try {
-                _isLoading.value = true
+                // Solo mostrar ProgressBar si NO es un pull-to-refresh (carga inicial)
+                if (!isRefreshing) {
+                    _isLoading.value = true
+                }
                 _errorMessage.value = null
                 _reloadError.value = null
 
@@ -77,7 +81,9 @@ class HomeViewModel @Inject constructor(
                         // Error de recarga - tenemos datos previos
                         _reloadError.value = "No se pudo recargar la lista"
                     }
-                    _isLoading.value = false
+                    if (!isRefreshing) {
+                        _isLoading.value = false
+                    }
                     return@launch
                 }
 
@@ -112,10 +118,14 @@ class HomeViewModel @Inject constructor(
                     }
                 }
 
-                _isLoading.value = false
+                if (!isRefreshing) {
+                    _isLoading.value = false
+                }
 
             } catch (e: Exception) {
-                _isLoading.value = false
+                if (!isRefreshing) {
+                    _isLoading.value = false
+                }
 
                 // Diferenciar entre error de carga inicial vs error de recarga
                 if (allContadores.isEmpty()) {
