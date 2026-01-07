@@ -122,6 +122,9 @@ class HomeActivity : AppCompatActivity() {
     private fun setupFabMenu() {
         // Click en el FAB principal para abrir/cerrar el menú
         binding.fabMenu.setOnClickListener {
+            // Bloquear si se está enviando
+            if (viewModel.isSendingAll.value == true) return@setOnClickListener
+
             if (isFabMenuOpen) {
                 closeFabMenu()
             } else {
@@ -131,6 +134,9 @@ class HomeActivity : AppCompatActivity() {
 
         // Botón ordenar por nombre
         binding.fabSortByName.setOnClickListener {
+            // Bloquear si se está enviando
+            if (viewModel.isSendingAll.value == true) return@setOnClickListener
+
             viewModel.sortByName()
             closeFabMenu()
             Toast.makeText(this, getString(R.string.sort_by_name), Toast.LENGTH_SHORT).show()
@@ -138,6 +144,9 @@ class HomeActivity : AppCompatActivity() {
 
         // Botón ordenar por código
         binding.fabSortByCode.setOnClickListener {
+            // Bloquear si se está enviando
+            if (viewModel.isSendingAll.value == true) return@setOnClickListener
+
             viewModel.sortByCode()
             closeFabMenu()
             Toast.makeText(this, getString(R.string.sort_by_code), Toast.LENGTH_SHORT).show()
@@ -145,6 +154,9 @@ class HomeActivity : AppCompatActivity() {
 
         // Botón ordenar por usuario
         binding.fabSortByUser.setOnClickListener {
+            // Bloquear si se está enviando
+            if (viewModel.isSendingAll.value == true) return@setOnClickListener
+
             viewModel.sortByUser()
             closeFabMenu()
             Toast.makeText(this, getString(R.string.sort_by_user), Toast.LENGTH_SHORT).show()
@@ -152,12 +164,27 @@ class HomeActivity : AppCompatActivity() {
 
         // Botón filtrar pendientes (toggle)
         binding.fabFilterPending.setOnClickListener {
+            // Bloquear si se está enviando
+            if (viewModel.isSendingAll.value == true) return@setOnClickListener
+
             closeFabMenu()
             togglePendingFilter()
         }
 
+        // Botón enviar todas las pendientes
+        binding.fabSendAll.setOnClickListener {
+            // Bloquear si se está enviando
+            if (viewModel.isSendingAll.value == true) return@setOnClickListener
+
+            closeFabMenu()
+            showSendAllConfirmationDialog()
+        }
+
         // Botón cerrar sesión
         binding.fabLogout.setOnClickListener {
+            // Bloquear si se está enviando
+            if (viewModel.isSendingAll.value == true) return@setOnClickListener
+
             closeFabMenu()
             showLogoutConfirmationDialog()
         }
@@ -184,6 +211,10 @@ class HomeActivity : AppCompatActivity() {
         if (hasPendientes) {
             binding.fabFilterPending.show()
             binding.fabFilterPendingLabel.visibility = View.VISIBLE
+
+            // También mostrar botón de enviar todas
+            binding.fabSendAll.show()
+            binding.fabSendAllLabel.visibility = View.VISIBLE
         }
 
         binding.fabLogout.show()
@@ -208,6 +239,9 @@ class HomeActivity : AppCompatActivity() {
 
         binding.fabFilterPending.hide()
         binding.fabFilterPendingLabel.visibility = View.GONE
+
+        binding.fabSendAll.hide()
+        binding.fabSendAllLabel.visibility = View.GONE
 
         binding.fabLogout.hide()
         binding.fabLogoutLabel.visibility = View.GONE
@@ -357,9 +391,47 @@ class HomeActivity : AppCompatActivity() {
                 reloadErrorSnackbar = null
             }
         }
+
+        // Observar resultado de envío masivo
+        viewModel.sendAllResult.observe(this) { result ->
+            result?.let { (successCount, failCount) ->
+                showSendAllResultDialog(successCount, failCount)
+                viewModel.resetSendAllResult()
+            }
+        }
+
+        // Observar estado de envío masivo para deshabilitar interacción
+        viewModel.isSendingAll.observe(this) { isSending ->
+            // Mostrar/ocultar ProgressBar horizontal
+            binding.sendAllProgressLayout.visibility = if (isSending) View.VISIBLE else View.GONE
+            // Ocultar ProgressBar circular cuando se está enviando
+            if (isSending) {
+                binding.progressBar.visibility = View.GONE
+            }
+
+            // Deshabilitar toda la interfaz durante el envío masivo
+            binding.swipeRefreshLayout.isEnabled = !isSending
+            binding.fabMenu.isEnabled = !isSending
+            binding.contadoresListView.isEnabled = !isSending
+            binding.searchIcon.isEnabled = !isSending
+
+            // Cambiar alpha para indicar visualmente que está deshabilitado
+            binding.contadoresListView.alpha = if (isSending) 0.5f else 1.0f
+        }
+
+        // Observar progreso de envío masivo
+        viewModel.sendAllProgress.observe(this) { (enviadas, total) ->
+            // Actualizar ProgressBar horizontal
+            binding.sendAllProgressBar.max = total
+            binding.sendAllProgressBar.progress = enviadas
+            binding.sendAllProgressCounter.text = "$enviadas / $total"
+        }
     }
 
     private fun showDeleteConfirmationDialog(idLastLectura: String) {
+        // Bloquear si se está enviando
+        if (viewModel.isSendingAll.value == true) return
+
         AlertDialog.Builder(this)
             .setTitle(R.string.delete_lectura)
             .setMessage(R.string.confirm_delete_lectura)
@@ -371,6 +443,9 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun openMedicionActivity(contador: com.codefm.aquameter.model.Contador) {
+        // Bloquear si se está enviando
+        if (viewModel.isSendingAll.value == true) return
+
         // Verificar si hay datos pendientes en caché
         if (contador.hasPendingMedicion) {
             showPendingMedicionInfoDialog(contador)
@@ -408,6 +483,9 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun handleRetryMedicion(contador: com.codefm.aquameter.model.Contador) {
+        // Bloquear si se está enviando
+        if (viewModel.isSendingAll.value == true) return
+
         // Obtener medición pendiente del repositorio
         val pendingMedicion = viewModel.getPendingMedicion(contador.id) ?: return
 
@@ -464,6 +542,9 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun showClearCacheConfirmationDialog(contador: com.codefm.aquameter.model.Contador) {
+        // Bloquear si se está enviando
+        if (viewModel.isSendingAll.value == true) return
+
         AlertDialog.Builder(this)
             .setTitle("Eliminar medición pendiente")
             .setMessage(R.string.confirm_clear_cache)
@@ -568,5 +649,38 @@ class HomeActivity : AppCompatActivity() {
         bottomSheetDialog.setContentView(view)
         bottomSheetDialog.show()
     }
-}
 
+    private fun showSendAllConfirmationDialog() {
+        val count = viewModel.getPendingCount()
+
+        if (count == 0) {
+            Toast.makeText(this, "No hay mediciones pendientes", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.send_all_pending)
+            .setMessage(getString(R.string.confirm_send_all_pending, count))
+            .setPositiveButton(R.string.send) { _, _ ->
+                viewModel.sendAllPendingMediciones()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showSendAllResultDialog(successCount: Int, failCount: Int) {
+        // Crear mensaje con los resultados
+        val message = buildString {
+            append("Envío masivo completado\n\n")
+            append("Éxitos: $successCount\n")
+            append("Fallidos: $failCount")
+        }
+
+        // Mostrar diálogo con resultados
+        AlertDialog.Builder(this)
+            .setTitle("Resultados del envío masivo")
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+}

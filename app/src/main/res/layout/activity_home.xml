@@ -133,6 +133,50 @@
                 android:visibility="visible"
                 android:layout_gravity="center" />
 
+            <!-- ProgressBar horizontal para envío masivo -->
+            <LinearLayout
+                android:id="@+id/sendAllProgressLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:padding="32dp"
+                android:background="#F5F5F5"
+                android:visibility="gone"
+                android:elevation="8dp">
+
+                <TextView
+                    android:id="@+id/sendAllProgressText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Enviando mediciones..."
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="16dp" />
+
+                <ProgressBar
+                    android:id="@+id/sendAllProgressBar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="?attr/colorPrimary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/sendAllProgressCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="0 / 0"
+                    android:textSize="14sp"
+                    android:textColor="#666666" />
+
+            </LinearLayout>
+
         </FrameLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -248,7 +292,7 @@
         android:visibility="gone"
         app:backgroundTint="#FFA726"
         app:fabSize="mini"
-        app:layout_constraintBottom_toTopOf="@id/fabLogout"
+        app:layout_constraintBottom_toTopOf="@id/fabSendAll"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
@@ -269,6 +313,39 @@
         app:layout_constraintBottom_toBottomOf="@id/fabFilterPending"
         app:layout_constraintEnd_toStartOf="@id/fabFilterPending"
         app:layout_constraintTop_toTopOf="@id/fabFilterPending" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSendAll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/send_all_pending"
+        android:src="@drawable/ic_send"
+        android:visibility="gone"
+        app:backgroundTint="#4CAF50"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@id/fabLogout"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/fabSendAllLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_fab_label"
+        android:elevation="6dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/send_all_pending"
+        android:textColor="@android:color/black"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/fabSendAll"
+        app:layout_constraintEnd_toStartOf="@id/fabSendAll"
+        app:layout_constraintTop_toTopOf="@id/fabSendAll" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabLogout"

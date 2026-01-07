@@ -56,6 +56,17 @@ class HomeViewModel @Inject constructor(
     private val _reloadError = MutableLiveData<String?>()
     val reloadError: LiveData<String?> = _reloadError
 
+    // LiveData para envío masivo de pendientes
+    private val _sendAllResult = MutableLiveData<Pair<Int, Int>?>() // (éxitos, fallos)
+    val sendAllResult: LiveData<Pair<Int, Int>?> = _sendAllResult
+
+    private val _isSendingAll = MutableLiveData<Boolean>()
+    val isSendingAll: LiveData<Boolean> = _isSendingAll
+
+    // LiveData para el progreso del envío masivo
+    private val _sendAllProgress = MutableLiveData<Pair<Int, Int>>() // (enviadas, total)
+    val sendAllProgress: LiveData<Pair<Int, Int>> = _sendAllProgress
+
     /**
      * Carga los contadores desde la API
      * @param isRefreshing indica si es una recarga (pull-to-refresh), en cuyo caso no se muestra el ProgressBar
@@ -315,5 +326,87 @@ class HomeViewModel @Inject constructor(
     fun resetRetrySuccess() {
         _retrySuccess.value = false
     }
-}
 
+    /**
+     * Obtiene la cantidad total de mediciones pendientes
+     */
+    fun getPendingCount(): Int {
+        return allContadores.count { it.hasPendingMedicion }
+    }
+
+    /**
+     * Envía todas las mediciones pendientes una por una
+     */
+    fun sendAllPendingMediciones() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _isSendingAll.value = true
+
+                // Obtener todas las mediciones pendientes
+                val allPending = allContadores.filter { it.hasPendingMedicion }
+                var successCount = 0
+                var failCount = 0
+
+                // Enviar una por una
+                allPending.forEachIndexed { index, contador ->
+                    val pendingMedicion = pendingRepository.getPendingMedicion(contador.id)
+
+                    if (pendingMedicion != null) {
+                        // Convertir foto a base64
+                        val fotoBase64 = if (pendingMedicion.fotoPath.isNotEmpty()) {
+                            pendingRepository.getPhotoAsBase64(pendingMedicion.fotoPath)
+                        } else {
+                            ""
+                        }
+
+                        // Intentar enviar
+                        val (success, _) = medicionService.addLectura(
+                            fecha = pendingMedicion.fecha,
+                            litros = pendingMedicion.litros,
+                            idContador = pendingMedicion.idContador,
+                            idUsuario = UserSession.idUsuario ?: "",
+                            foto = fotoBase64,
+                            nota = pendingMedicion.nota
+                        )
+
+                        if (success) {
+                            successCount++
+                            // Eliminar de caché
+                            pendingRepository.deletePendingMedicion(pendingMedicion.idContador)
+                            // Actualizar contador para quitar pendiente
+                            contador.hasPendingMedicion = false
+                        } else {
+                            failCount++
+                        }
+                    }
+
+                    // Actualizar progreso (enviadas, total)
+                    _sendAllProgress.value = Pair(successCount + failCount, allPending.size)
+                }
+
+                // Ocultar loading momentáneamente
+                _isLoading.value = false
+                _isSendingAll.value = false
+
+                // Recargar la lista desde la API para obtener datos actualizados
+                loadContadores()
+
+                // Mostrar resultado
+                _sendAllResult.value = Pair(successCount, failCount)
+
+            } catch (e: Exception) {
+                _isLoading.value = false
+                _isSendingAll.value = false
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * Resetea el resultado de envío masivo
+     */
+    fun resetSendAllResult() {
+        _sendAllResult.value = null
+    }
+}

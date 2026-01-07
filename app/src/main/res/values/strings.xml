@@ -57,6 +57,13 @@
     <string name="retry_send_success">Medición enviada correctamente</string>
     <string name="medicion_saved_locally">No se pudo enviar. La medición se guardó localmente para reenviar más tarde.</string>
 
+    <!-- Envío masivo de pendientes -->
+    <string name="send_all_pending">Enviar mediciones pendientes</string>
+    <string name="confirm_send_all_pending">¿Deseas enviar %d mediciones pendientes?.</string>
+    <string name="send_all_result">Resultado del envío</string>
+    <string name="send">Enviar</string>
+    <string name="ok">Aceptar</string>
+
     <!-- Autenticación biométrica -->
     <string name="biometric_title">Autenticación biométrica</string>
     <string name="biometric_subtitle">Coloca tu dedo en el sensor</string>
