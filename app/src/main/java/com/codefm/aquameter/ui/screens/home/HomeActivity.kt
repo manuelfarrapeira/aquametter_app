@@ -327,6 +327,17 @@ class HomeActivity : AppCompatActivity() {
                 binding.contadoresListView.adapter = adapter
                 binding.contadoresListView.visibility = View.VISIBLE
                 binding.errorText.visibility = View.GONE
+            } else {
+                val adapter = ContadorAdapter(
+                    context = this,
+                    contadores = emptyList(),
+                    onDeleteClick = { },
+                    onItemClick = { },
+                    onRetryClick = { },
+                    onClearCacheClick = { }
+                )
+                binding.contadoresListView.adapter = adapter
+                binding.contadoresListView.visibility = View.VISIBLE
             }
         }
 

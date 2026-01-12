@@ -12,7 +12,7 @@
     <string name="confirm_delete_lectura">¿Estás seguro de que deseas eliminar esta lectura?</string>
     <string name="delete_success">Lectura eliminada correctamente</string>
     <string name="delete_error">Error al eliminar la lectura</string>
-    <string name="search_hint">Buscar por nombre</string>
+    <string name="search_hint">Buscar por nombre o contador</string>
     <string name="menu_button">Menú</string>
     <string name="logout">Cerrar sesión</string>
     <string name="sort_by_name">Ordenar por nombre</string>
