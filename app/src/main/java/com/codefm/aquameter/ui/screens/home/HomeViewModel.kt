@@ -197,7 +197,7 @@ class HomeViewModel @Inject constructor(
             // Filtrar por nombre o código de contador (case insensitive)
             val filtered = allContadores.filter { contador ->
                 contador.nombre.contains(query, ignoreCase = true) ||
-                contador.codigoContador.equals(query, ignoreCase = true)
+                contador.codigoContador.contains(query, ignoreCase = true)
             }
             _contadores.value = filtered
         }
